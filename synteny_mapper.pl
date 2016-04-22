@@ -65,14 +65,14 @@ close ALL;
 # Synteny map loci, if specified
 if ($config{'synteny_map_loci'}) {
 	print "Synteny mapping loci...\n";
-	
+
 	my @synteny_outfiles;
 	foreach my $species (keys %comps) {
 		print "\tMapping loci for $species...\n";
 		system("perl map_loci.pl -i $config{'synteny_map_loci'} -s synteny.out -l ${species}.synteny.sum -g $species -b $comps{$species} -z $config{'db_dir'} -m $config{'min_hit_length'} -a $config{'blast_args'}");
 		push @synteny_outfiles, $species . '.synteny.mapped.out';
 	}
-	
+
 	system("perl consol_synteny_map_loci.pl -m $config{'map_file'} -o all.synteny.mapped.out -f " . join(' ', @synteny_outfiles));
 }
 
@@ -121,10 +121,10 @@ print "Program Finished\n";
 
 
 sub add_comps {
-	
+
 	my %config = %{$_[0]};
 	my %comps;
-	
+
 	# Danio rerio
 	if ($config{'drer'} eq 'TRUE') {
 		$comps{'drer'} = 'Drer_v9';
@@ -144,12 +144,22 @@ sub add_comps {
 	if ($config{'tnig'} eq 'TRUE') {
 		$comps{'tnig'} = 'Tnig_v8';
 	}
-	
+
 	# Takifugu rubripes
 	if ($config{'trub'} eq 'TRUE') {
 		$comps{'trub'} = 'Trub_v5';
 	}
-	
+
+	# Lates calcarifer
+	if ($config{'lcal'} eq 'TRUE') {
+		$comps{'lcal'} = 'Lcal_v1';
+	}
+
+	# Dicentrarchus labrax
+	if ($config{'dlab'} eq 'TRUE') {
+		$comps{'dlab'} = 'Dlab_v1';
+	}
+
 	return \%comps;
 
 }

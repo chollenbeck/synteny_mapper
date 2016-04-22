@@ -19,7 +19,7 @@ GetOptions(		'files|f=s{1,}' => \@files,
 				'locfile|l=s' => \$locfile,
 
 	);
-	
+
 
 
 open (DUMP, ">", 'dumper.out');
@@ -60,7 +60,7 @@ foreach my $file (@files) {
 	}
 
 	$stats{'total_map_loci'} = scalar(keys %map_loci);
-	
+
 	open(IN, "<", $file);
 
 	my %chroms;
@@ -73,8 +73,8 @@ foreach my $file (@files) {
 		} elsif ($_ =~ /^(\S+)\s/) {
 			$locus = $1;
 		}
-		
-			
+
+
 		if (! $chroms{$locus}) {
 			$chroms{$locus} = [];
 		}
@@ -97,7 +97,7 @@ foreach my $file (@files) {
 			}
 			next if $chrom eq 'chrUn';
 			$chrom = convert_gacu($chrom);
-			
+
 		}
 		if ($genome eq 'onil') {
 			if ($_ =~ /LG(\S+)?,/) {
@@ -116,6 +116,35 @@ foreach my $file (@files) {
 				$pos = $1;
 			}
 		}
+		if ($genome eq 'lcal') {
+			if ($_ =~ /LG(\w+)/) {
+				$chrom = $1;
+			}
+
+			if ($chrom == '16_LG22') {
+				$chrom = '16-22';
+			}
+			if ($_ =~ /(\d+)\s\d+$/) {
+				$pos = $1;
+			}
+
+			print "Hit: $genome, [$chrom]\n";
+		}
+		if ($genome eq 'dlab') {
+			next if $_ =~ /UN/;
+			if ($_ =~ /LG(\w+)/) {
+				$chrom = $1;
+			}
+			if ($chrom == '22') {
+				$chrom = '22-25';
+			}
+			if ($chrom == '18') {
+				$chrom = '18-21';
+			}
+			if ($_ =~ /(\d+)\s\d+$/) {
+				$pos = $1;
+			}
+		}
 		my $prop = convert_pos($chrom, $pos, $genome);
 		push @{$chroms{$locus}}, $chrom;
 		if (! $data{$genome}{$locus}) {
@@ -123,13 +152,13 @@ foreach my $file (@files) {
 		} else {
 			push @{$data{$genome}{$locus}}, [$chrom, $prop, $pos];
 		}
-		
+
 	}
 	close IN;
-	
+
 	foreach my $lg (keys %map) {
 		foreach my $locus (keys %{$map{$lg}}) {
-	
+
 			next unless $map_loci{$locus} == 1;
 			if (! $data{$genome}{$locus}) { # if there is no hit for a locus...
 				$stats{$genome}{'map_no_hit'}++;
@@ -189,7 +218,7 @@ foreach my $locus (keys %map_loci) {
 	}
 	print OUT "\n";
 }
-		
+
 
 sub convert_gacu {
 	my $chrom = shift;
@@ -217,13 +246,13 @@ sub convert_gacu {
 	'XX' => 20,
 	'XXI' => 21,
 	);
-	
+
 	my $new_chrom = $gacu_chrom{$chrom};
 	return $new_chrom;
 }
 
 sub read_chr_lengths {
-	
+
 	my @genomes = ();
 	my $counter = 0;
 	while(<DATA>) {
@@ -266,7 +295,7 @@ sub write_summary_file {
 	my $genome = $_[1];
 	open(SUM, ">", $genome . '_blast_summary.out');
 	print SUM Dumper(\%stats);
-	
+
 	print SUM "Summary of $genome BLAST:\n";
 	print SUM "Total_loci: ", $stats{'total_loci'}, "\n";
 	print SUM "Total Map Loci: ", $stats{'total_map_loci'}, " ($stats{'total_map_neutral'} neutral, $stats{'total_map_est'} EST)", "\n";
@@ -277,7 +306,7 @@ sub write_summary_file {
 	print SUM "\t\tMap Hits (neutral): ", $stats{'map_hit_neutral'}, "\n";
 	print SUM "\t\t\tMultiple hits (neutral): ", $stats{'map_multiple_hit_neutral'}, "\n";
 	print SUM "Total comparisons: ", $stats{'map_hit'} - $stats{'map_multiple_hit_neutral'} - $stats{'map_multiple_hit_est'}, "\n";
-	
+
 }
 
 sub read_map {
@@ -291,10 +320,10 @@ sub read_map {
 		chomp;
 		my ($locus, $lg, $pos) = split;
 		$lgs{$lg}{$locus} = $pos;
-		
+
 	}
 	close MAP;
-	
+
 	return %lgs;
 }
 
@@ -314,7 +343,7 @@ sub convert_lg_pos {
 	}
 	return %lg_mod;
 }
-	
+
 
 __END__
 >drer
@@ -442,19 +471,71 @@ MT	16462
 8	14690302
 9	13922460
 
-	
+>dlab
+10     24053896
+11     26215200
+12     23234908
+13     27622843
+14     28395245
+15     25566315
+16     25821574
+17     22893611
+18-21  16453912
+19     23202889
+1A     29036788
+1B     17995764
+2      26218737
+20     28398722
+22-25  26439989
+24     13918872
+3      13451259
+4      27569954
+5      32612477
+6      28185029
+7      28480941
+8      23067096
+9      22362490
+x      17779090
+
+>lcal
+23	18168282
+4	25538952
+12	27842965
+24	19811778
+8	25919959
+3	23499962
+17	27673719
+1	25703306
+21	28676982
+5	28963731
+10	27937307
+11	23293155
+19	24524913
+13	27244013
+7_1	23258384
+7_2	13910880
+2	30394535
+6	27924252
+15	30776907
+18	19193443
+9	22990584
+20	23753645
+16-22	25848596
+14	14073782
+
+
 =head1 NAME
 
 parse_map_blast_report.pl
 
 =head1 SYNOPSIS
 
-parse_map_blast_report.pl 
+parse_map_blast_report.pl
 
 Options:
      -f     files
      -m     mapfile
-     -l		locusfile 
+     -l		locusfile
      -o		outfile
 
 =head1 OPTIONS
@@ -481,6 +562,6 @@ output file written in 'csv' format
 
 =head1 DESCRIPTION
 
-B<parse_map_blast_report.pl> parses BLAST reports to generate a file containing BLAST hit information across multiple species 
+B<parse_map_blast_report.pl> parses BLAST reports to generate a file containing BLAST hit information across multiple species
 
 =cut
