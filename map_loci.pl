@@ -30,9 +30,9 @@ GetOptions(		'infile|i=s' => \$infile,
 				'argfile|a=s' => \$argfile,
 
 	);
-	
+
 open(DUMP, ">", 'dumper.out') or die $!;
-	
+
 # BLAST loci
 
 # Open the file with BLAST arguments and read in the parameters
@@ -50,12 +50,12 @@ while(<ARG>) {
 # Read in the FASTA file
 my $seq_in = Bio::SeqIO->new(-file => $infile,
 							-format => 'fasta');
-							
-my @seqs;								
+
+my @seqs;
 while (my $seq = $seq_in->next_seq) {
 	push @seqs, $seq;
 }
-								
+
 # Create the BLAST factory object
 my $fac = Bio::Tools::Run::StandAloneBlastPlus->new( -db_name => $blast_db, -db_dir => $db_dir );
 
@@ -65,13 +65,13 @@ my %hits;
 foreach my $seq (@seqs) {
 	my $result = $fac->blastn( -query => $seq,
                         -method_args => \@args );
-	
+
 		while (my $hit = $result->next_hit ) {
 			while (my $hsp = $hit->next_hsp ) {
 				if ($hsp->length('total') >= $min_length ) {
 					print TAB join("\t", $result->query_name, $hit->name, $hit->description, $hit->significance, $hsp->start('hit'), $hsp->end('hit')), "\n";
 				}
-			}  
+			}
 		}
 }
 $fac->cleanup;
@@ -94,8 +94,8 @@ while(<HIT>) {
 	} elsif ($_ =~ /^(\S+)\s/) {
 		$locus = $1;
 	}
-	
-		
+
+
 	if (! $chroms{$locus}) {
 		$chroms{$locus} = [];
 	}
@@ -118,7 +118,7 @@ while(<HIT>) {
 		}
 		next if $chrom eq 'chrUn';
 		$chrom = convert_gacu($chrom);
-		
+
 	}
 	if ($genome eq 'onil') {
 		if ($_ =~ /LG(\S+)?,/) {
@@ -137,6 +137,35 @@ while(<HIT>) {
 			$pos = $1;
 		}
 	}
+	if ($genome eq 'lcal') {
+		if ($_ =~ /LG(\w+)/) {
+			$chrom = $1;
+		}
+
+		if ($chrom == '16_LG22') {
+			$chrom = '16-22';
+		}
+		if ($_ =~ /(\d+)\s\d+$/) {
+			$pos = $1;
+		}
+
+		print "Hit: $genome, [$chrom]\n";
+	}
+	if ($genome eq 'dlab') {
+		next if $_ =~ /UN/;
+		if ($_ =~ /LG(\w+)/) {
+			$chrom = $1;
+		}
+		if ($chrom == '22') {
+			$chrom = '22-25';
+		}
+		if ($chrom == '18') {
+			$chrom = '18-21';
+		}
+		if ($_ =~ /(\d+)\s\d+$/) {
+			$pos = $1;
+		}
+	}
 	my $prop = convert_pos($chrom, $pos, $genome);
 	push @{$chroms{$locus}}, $chrom;
 	if (! $data{$locus}) {
@@ -144,7 +173,7 @@ while(<HIT>) {
 	} else {
 		push @{$data{$locus}}, [$chrom, $prop, $pos];
 	}
-	
+
 }
 close HIT;
 
@@ -225,7 +254,7 @@ while(<BLOCK>) {
 		$block{$locus} = $comp_info{$locus}[2];
 	}
 	push @blocks, \%block;
-	
+
 	# Record the chromosomal position of the first and last locus in the block (with the smaller value first)
 	my @coords = sort {$a <=> $b} ($comp_info{$block[0]}[2], $comp_info{$block[-1]}[2]);
 	push @block_coords, \@coords;
@@ -255,7 +284,7 @@ foreach my $locus (keys %single_hits) {
 				push @loci, $marker;
 				push @coords, $temp_block{$marker};
 			}
-			
+
 			my $left;
 			my $right;
 			for (my $j = 0; $j < scalar(@loci); $j++) {
@@ -268,7 +297,7 @@ foreach my $locus (keys %single_hits) {
 				}
 			}
 			print OUT join("\t", $locus, $map_info{$left}[0], $left, $right, $map_info{$left}[2], $map_info{$right}[2]), "\n";
-			
+
 		} else { # the locus is not within the block
 			next;
 		}
@@ -291,10 +320,10 @@ sub read_map {
 		chomp;
 		my ($locus, $lg, $pos) = split;
 		$lgs{$lg}{$locus} = $pos;
-		
+
 	}
 	close MAP;
-	
+
 	return %lgs;
 }
 
@@ -325,13 +354,13 @@ sub convert_gacu {
 	'XX' => 20,
 	'XXI' => 21,
 	);
-	
+
 	my $new_chrom = $gacu_chrom{$chrom};
 	return $new_chrom;
 }
 
 sub read_chr_lengths {
-	
+
 	my @genomes = ();
 	my $counter = 0;
 	while(<DATA>) {
@@ -494,3 +523,55 @@ MT	16462
 7	14304132
 8	14690302
 9	13922460
+
+>dlab
+10     24053896
+11     26215200
+12     23234908
+13     27622843
+14     28395245
+15     25566315
+16     25821574
+17     22893611
+18-21  16453912
+19     23202889
+1A     29036788
+1B     17995764
+2      26218737
+20     28398722
+22-25  26439989
+24     13918872
+3      13451259
+4      27569954
+5      32612477
+6      28185029
+7      28480941
+8      23067096
+9      22362490
+x      17779090
+
+>lcal
+23	18168282
+4	25538952
+12	27842965
+24	19811778
+8	25919959
+3	23499962
+17	27673719
+1	25703306
+21	28676982
+5	28963731
+10	27937307
+11	23293155
+19	24524913
+13	27244013
+7_1	23258384
+7_2	13910880
+2	30394535
+6	27924252
+15	30776907
+18	19193443
+9	22990584
+20	23753645
+16-22	25848596
+14	14073782
