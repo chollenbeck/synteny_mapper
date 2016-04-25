@@ -204,7 +204,7 @@ foreach my $locus (keys %map_loci) {
 	next unless $loci{$locus};
 	print OUT $locus, ',';
 	foreach my $lg (keys %map) {
-		if ($map{$lg}{$locus}) {
+		if (defined $map{$lg}{$locus}) {
 			print OUT join(',', $lg, $map_mod{$lg}{$locus}, $map{$lg}{$locus}), ',';
 			last;
 		}
