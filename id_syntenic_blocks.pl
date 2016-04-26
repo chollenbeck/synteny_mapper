@@ -185,7 +185,7 @@ foreach my $lg (keys %blocks) {
 		push @comp_block_size, $comp_size;
 		my $map_lg;
 		foreach my $group (keys %lgs) {
-			if ($lgs{$group}{$block->[0]}) {
+			if (defined $lgs{$group}{$block->[0]}) {
 				$map_lg = $group;
 				$map_lg =~ s/LG//;
 				last;
