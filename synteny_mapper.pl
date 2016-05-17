@@ -46,7 +46,7 @@ system("perl parse_blast_report.pl -m $config{'map_file'} -l loci.txt -o synteny
 print "Identifying syntenic blocks for each species...\n";
 foreach my $species (keys %comps) {
 	print "\tProcessing $species...\n";
-	system("perl id_syntenic_blocks.pl -m $config{'map_file'} -i synteny.out -g $species");
+	system("perl id_syntenic_blocks.pl -m $config{'map_file'} -i synteny.out -g $species -e $config{'error_rate'}");
 }
 
 # Combine syntenic block data
@@ -112,9 +112,11 @@ chdir $main_dir;
 File::Copy::copy('config.txt',"$res_dir/") or die "Could not move file: $!\n";
 File::Copy::move('loci.txt',"$res_dir/") or die "Could not move file: $!\n";
 File::Copy::move('all.blocks.tab',"$res_dir/") or die "Could not move file: $!\n";
-File::Copy::move('all.synteny.mapped.out',"$res_dir/") or die "Could not move file: $!\n";
 File::Copy::move('synteny.out',"$res_dir/") or die "Could not move file: $!\n";
 
+if ($config{'synteny_map_loci'}) {
+	File::Copy::move('all.synteny.mapped.out',"$res_dir/") or die "Could not move file: $!\n";
+}
 
 print "Program Finished\n";
 
