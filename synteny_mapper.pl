@@ -8,12 +8,12 @@ use Cwd;
 my $version = '1.0.0';
 
 my $opt_version = '';
-my $config = '';
+my $config = 'config.txt';
 
 pod2usage(-verbose => 1) if @ARGV == 0;
 
 GetOptions(	'version' => \$opt_version,
-		'config|c' => \$config,
+		'config|c=s' => \$config,
 
 		);
 
