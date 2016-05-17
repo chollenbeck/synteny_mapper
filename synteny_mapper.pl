@@ -5,15 +5,28 @@ use Pod::Usage;
 use File::Copy;
 use Cwd;
 
+my $version = '1.0.0';
+
+my $opt_version = '';
+my $config = '';
+
 pod2usage(-verbose => 1) if @ARGV == 0;
+
+GetOptions(	'version' => \$opt_version,
+		'config|c' => \$config,
+
+		);
+
+
+if ($opt_version) {
+	die "Version ",  $version, "\n";
+}
 
 # Get the working directory
 
 my $cwd = getcwd();
 
 # Read in the config file
-my $config = shift;
-
 my %config;
 open(CON, "<", $config) or die $!;
 while(<CON>) {
@@ -165,3 +178,35 @@ sub add_comps {
 	return \%comps;
 
 }
+
+__END__
+
+=head1 NAME
+
+synteny_mapper.pl
+
+=head1 SYNOPSIS
+
+perl synteny_mapper.pl -c <config_file>
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<-c, --config>
+
+Input configuration file (required)
+
+=item B<--version>
+
+Print the current version
+
+=back
+
+=head1 DESCRIPTION
+
+B<synteny_mapper.pl> identifies shared syntenic regions between a linkage map and
+the genomes of related species. It will also optionally attempt to map sequences
+(relative to the linkage map) usingthe synteny information generated.
+
+=cut
