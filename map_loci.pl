@@ -149,7 +149,6 @@ while(<HIT>) {
 			$pos = $1;
 		}
 
-		print "Hit: $genome, [$chrom]\n";
 	}
 	if ($genome eq 'dlab') {
 		next if $_ =~ /UN/;
