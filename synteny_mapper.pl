@@ -5,7 +5,7 @@ use Pod::Usage;
 use File::Copy;
 use Cwd;
 
-my $version = '1.0.0';
+my $version = '1.0.1';
 
 my $opt_version = '';
 my $config = 'config.txt';
