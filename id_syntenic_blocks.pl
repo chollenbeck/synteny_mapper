@@ -33,6 +33,8 @@ open(OUT, ">", $genome . '.synteny.blocks');
 open(STAT, ">", $genome . '.synteny.stats');
 open(TAB, ">", $genome . '.synteny.tab');
 
+open(DUMP, ">", 'dumper.out') or die $!;
+
 chomp(my $headers = <CSV>);
 my @fields = split(',', $headers);
 
@@ -175,11 +177,15 @@ foreach my $lg (@map_lgs) {
 
 print "\tInitial round: ", count_blocks(\%blocks), "\n";
 
+
+
 # Step 2: Remove single loci that map to different chromosomes (errors/mulitcopy/small translocations)
 print "\tRemoving single locus translocations", "\n";
 my ($new_blocks, $removed) = remove_single_breakers(\%blocks, \%comp_info);
 %blocks = %{$new_blocks};
 %removed = %{$removed};
+
+
 
 
 # Step 3: Iteratively merge blocks that can now be combined
@@ -194,10 +200,13 @@ for ($i = 1; $i < 100; $i++) {
 	$prev_blocks = count_blocks(\%new_blocks);
 }
 
+
+
 # Step 4: Swap positions (in the array) of single blocks with the same map position
 print "\tSwapping single locus blocks with same map position (error rate = 0)", "\n";
 %blocks = swap_singles(\%blocks, 0);
 
+#print DUMP Dumper(\%blocks);
 
 # Step 5: Iteratively merge blocks that can now be combined
 print "\tMerging blocks", "\n";
@@ -224,6 +233,10 @@ for ($k = $j + 1; $k < 100; $k++) {
 	last if $prev_blocks == count_blocks(\%new_blocks);
 	$prev_blocks = count_blocks(\%new_blocks);
 }
+
+
+
+#print DUMP Dumper(\%blocks);
 
 #my %overmerged = test_blocks(\%blocks, \%comp_info, \%map_info, $error_level);
 
@@ -727,6 +740,7 @@ sub swap_singles {
 	my %blocks = %{$_[0]};
 	my $error_level = $_[1];
 
+
 	my %new_blocks;
 	foreach my $lg (keys %blocks) {
 		# Look for single locus blocks that have the same map position
@@ -737,9 +751,13 @@ sub swap_singles {
 				next;
 			}
 
+			#print $i, "\t", scalar(@{$blocks{11}}), "\n" if $lg == 11;
+
+
 			my $locus = $blocks{$lg}[$i][0];
 			my $num_matches = 0;
 			for (my $j = 1; $j < scalar(@{$blocks{$lg}}); $j++) {
+				last unless $blocks{$lg}[$i + $j];
 				my $locus2 = $blocks{$lg}[$i + $j][0];
 				if (scalar(@{$blocks{$lg}[$i + $j]}) == 1 && (abs($map_info{$locus}[1] - $map_info{$locus2}[1]) <= $error_level) && ($comp_info{$locus}[0] eq $comp_info{$locus2}[0])) {
 					$num_matches++;
@@ -747,6 +765,8 @@ sub swap_singles {
 					last;
 				}
 			}
+
+
 
 			if ($num_matches > 0) {
 				# Put them in reverse order
@@ -768,7 +788,10 @@ sub swap_singles {
 			$new_blocks{$lg}[$positions{$lg}{$i}] = $blocks{$lg}[$i];
 		}
 
+
+
 	}
+
 
 	return %new_blocks;
 }
